@@ -1,5 +1,11 @@
 {
     "skins": [
         {
+            "id": "1",
             "name": "Skin Default",
-            "file": "default.png
+            "file": "default.png",
+            "uploadDate": "2025-06-09",
+            "uploader": "DarianGMR"
+        }
+    ]
+}
