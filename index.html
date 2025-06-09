@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MC Skins Gallery - DarianGMR</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Skinview3d para visualización 3D de skins -->
     <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.0-alpha.1/bundles/skinview3d.bundle.min.js"></script>
-    <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -19,7 +17,6 @@
         <div class="nav-links">
             <a href="#" class="active">Galería</a>
             <a href="#" id="uploadBtn">Subir Skin</a>
-            <a href="#" id="aboutBtn">Acerca de</a>
         </div>
     </nav>
 
@@ -33,21 +30,6 @@
     </div>
 
     <main>
-        <div class="filters">
-            <select id="categoryFilter">
-                <option value="all">Todas las categorías</option>
-                <option value="pvp">PVP</option>
-                <option value="aesthetic">Estético</option>
-                <option value="meme">Meme</option>
-                <option value="custom">Personalizado</option>
-            </select>
-            <select id="sortFilter">
-                <option value="newest">Más recientes</option>
-                <option value="popular">Más populares</option>
-                <option value="downloads">Más descargadas</option>
-            </select>
-        </div>
-
         <div class="skin-gallery" id="skinGallery">
             <!-- Las skins se cargarán dinámicamente aquí -->
         </div>
@@ -66,44 +48,21 @@
                 <div class="form-group">
                     <label for="skinFile">Archivo de Skin:</label>
                     <input type="file" id="skinFile" accept=".png" required>
-                </div>
-                <div class="form-group">
-                    <label for="skinCategory">Categoría:</label>
-                    <select id="skinCategory" required>
-                        <option value="pvp">PVP</option>
-                        <option value="aesthetic">Estético</option>
-                        <option value="meme">Meme</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="skinDescription">Descripción:</label>
-                    <textarea id="skinDescription"></textarea>
+                    <div id="skinPreview"></div>
                 </div>
                 <button type="submit" class="btn-primary">Subir Skin</button>
             </form>
         </div>
     </div>
 
-    <!-- Modal para vista previa de skin -->
-    <div id="previewModal" class="modal">
+    <!-- Modal de confirmación para reemplazar skin -->
+    <div id="replaceModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <div class="skin-preview">
-                <div id="skinViewer3d"></div>
-                <div class="skin-info">
-                    <h2 id="previewName"></h2>
-                    <p id="previewAuthor"></p>
-                    <p id="previewDescription"></p>
-                    <div class="preview-actions">
-                        <button class="btn-primary download-btn">
-                            <i class="fas fa-download"></i> Descargar
-                        </button>
-                        <button class="btn-secondary like-btn">
-                            <i class="fas fa-heart"></i> Me gusta
-                        </button>
-                    </div>
-                </div>
+            <h2>Skin Existente</h2>
+            <p>Ya existe una skin con este nombre. ¿Deseas reemplazarla?</p>
+            <div class="modal-buttons">
+                <button id="confirmReplace" class="btn-primary">Sí, reemplazar</button>
+                <button id="cancelReplace" class="btn-secondary">No, cancelar</button>
             </div>
         </div>
     </div>
@@ -112,30 +71,19 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>MC Skins Gallery</h3>
-                <p>Una galería de skins para la comunidad de Minecraft</p>
+                <p>Creado por DarianGMR</p>
             </div>
             <div class="footer-section">
                 <h3>Enlaces</h3>
-                <a href="#">Términos de uso</a>
-                <a href="#">Política de privacidad</a>
-                <a href="#">Contacto</a>
-            </div>
-            <div class="footer-section">
-                <h3>Síguenos</h3>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-github"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-discord"></i></a>
-                </div>
+                <a href="#">Github</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 MC Skins Gallery by DarianGMR. All rights reserved.</p>
+            <p>&copy; 2025 MC Skins Gallery by DarianGMR</p>
         </div>
     </footer>
 
     <script src="js/gallery.js"></script>
     <script src="js/upload.js"></script>
-    <script src="js/preview.js"></script>
 </body>
 </html>
