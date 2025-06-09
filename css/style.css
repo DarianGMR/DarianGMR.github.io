@@ -219,3 +219,22 @@ footer {
         font-size: 2rem;
     }
 }
+
+.error-message {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    min-height: 1.2em;
+}
+
+#skinPreview {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+#skinPreview canvas {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
