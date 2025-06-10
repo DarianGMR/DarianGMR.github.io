@@ -187,6 +187,11 @@ async function getGitHubToken() {
     return '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';
 }
 
+headers: {
+  'Authorization': 'Bearer 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',
+  'Accept': 'application/vnd.github.v3+json'
+}
+
 function resetForm() {
     document.getElementById('uploadForm').reset();
     document.getElementById('skinPreview').innerHTML = '';
