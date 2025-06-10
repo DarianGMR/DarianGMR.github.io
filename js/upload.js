@@ -14,15 +14,25 @@ function setupUploadModal() {
     skinFileInput.parentNode.appendChild(errorDiv);
 
     // Cuando se hace clic en el botón de subir
-    uploadBtn.addEventListener('click', () => {
-        uploadModal.style.display = 'block';
-    });
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', () => {
+            if (uploadModal) {
+                uploadModal.style.display = 'block';
+            } else {
+                console.error('No se encontró el modal de subida');
+            }
+        });
+    } else {
+        console.error('No se encontró el botón de subida');
+    }
 
     // Cerrar modal
-    closeBtn.addEventListener('click', () => {
-        uploadModal.style.display = 'none';
-        resetForm();
-    });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            uploadModal.style.display = 'none';
+            resetForm();
+        });
+    }
 
     // Cerrar modal al hacer clic fuera
     window.addEventListener('click', (e) => {
@@ -33,55 +43,59 @@ function setupUploadModal() {
     });
 
     // Validar archivo al seleccionarlo
-    skinFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        errorDiv.textContent = '';
-        
-        if (!file) return;
+    if (skinFileInput) {
+        skinFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            errorDiv.textContent = '';
+            
+            if (!file) return;
 
-        try {
-            // Validar tipo de archivo
-            if (file.type !== 'image/png') {
-                throw new Error('La skin debe ser un archivo PNG');
+            try {
+                // Validar tipo de archivo
+                if (file.type !== 'image/png') {
+                    throw new Error('La skin debe ser un archivo PNG');
+                }
+
+                // Validar tamaño (1MB máximo)
+                if (file.size > 1024 * 1024) {
+                    throw new Error('La skin no debe superar 1MB');
+                }
+
+                // Validar dimensiones
+                const dimensions = await getImageDimensions(file);
+                if (dimensions.width !== 64 || dimensions.height !== 64) {
+                    throw new Error('La skin debe ser de 64x64 píxeles');
+                }
+
+                // Mostrar vista previa
+                showSkinPreview(file);
+            } catch (error) {
+                errorDiv.textContent = `Error: ${error.message}`;
+                skinFileInput.value = '';
             }
-
-            // Validar tamaño (1MB máximo)
-            if (file.size > 1024 * 1024) {
-                throw new Error('La skin no debe superar 1MB');
-            }
-
-            // Validar dimensiones
-            const dimensions = await getImageDimensions(file);
-            if (dimensions.width !== 64 || dimensions.height !== 64) {
-                throw new Error('La skin debe ser de 64x64 píxeles');
-            }
-
-            // Mostrar vista previa
-            showSkinPreview(file);
-        } catch (error) {
-            errorDiv.textContent = `Error: ${error.message}`;
-            skinFileInput.value = '';
-        }
-    });
+        });
+    }
 
     // Manejar el envío del formulario
-    uploadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const skinName = document.getElementById('skinName').value;
-        const skinFile = document.getElementById('skinFile').files[0];
-        errorDiv.textContent = '';
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const skinName = document.getElementById('skinName').value;
+            const skinFile = document.getElementById('skinFile').files[0];
+            errorDiv.textContent = '';
 
-        if (!skinFile || !isValidSkinFile(skinFile)) {
-            return;
-        }
+            if (!skinFile || !isValidSkinFile(skinFile)) {
+                return;
+            }
 
-        try {
-            await uploadSkin(skinName, skinFile);
-        } catch (error) {
-            console.error('Error al subir la skin:', error);
-            errorDiv.textContent = 'Error al subir la skin. Por favor, intenta de nuevo.';
-        }
-    });
+            try {
+                await uploadSkin(skinName, skinFile);
+            } catch (error) {
+                console.error('Error al subir la skin:', error);
+                errorDiv.textContent = 'Error al subir la skin. Por favor, intenta de nuevo.';
+            }
+        });
+    }
 }
 
 function getImageDimensions(file) {
@@ -112,6 +126,8 @@ function isValidSkinFile(file) {
 
 function showSkinPreview(file) {
     const preview = document.getElementById('skinPreview');
+    if (!preview) return;
+    
     preview.innerHTML = '';
 
     const skinViewer = new skinview3d.SkinViewer({
@@ -129,7 +145,7 @@ async function uploadSkin(skinName, skinFile) {
         console.log('Iniciando subida de skin:', skinName);
         const base64Data = await fileToBase64(skinFile);
         
-        // Token de GitHub directamente en el código
+        // Token de GitHub
         const token = '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';
         
         console.log('Preparando solicitud...');
@@ -182,16 +198,19 @@ function fileToBase64(file) {
 }
 
 function resetForm() {
-    document.getElementById('uploadForm').reset();
-    document.getElementById('skinPreview').innerHTML = '';
-    document.querySelector('.error-message').textContent = '';
+    const form = document.getElementById('uploadForm');
+    const preview = document.getElementById('skinPreview');
+    const errorMessage = document.querySelector('.error-message');
+    
+    if (form) form.reset();
+    if (preview) preview.innerHTML = '';
+    if (errorMessage) errorMessage.textContent = '';
 }
 
 async function loadSkins() {
     try {
         const response = await fetch('skins/metadata.json');
         const data = await response.json();
-        // Aquí puedes actualizar la galería con las skins
         console.log('Skins cargadas:', data.skins);
     } catch (error) {
         console.error('Error al cargar las skins:', error);
