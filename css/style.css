@@ -221,20 +221,33 @@ footer {
 }
 
 .error-message {
-    color: var(--accent-color);
+    color: #e74c3c;
     font-size: 0.9rem;
     margin-top: 0.5rem;
-    min-height: 1.2em;
+    padding: 5px;
 }
 
 #skinPreview {
     margin-top: 1rem;
     text-align: center;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
 }
 
 #skinPreview canvas {
     max-width: 100%;
     height: auto;
-    border: 1px solid #ddd;
+}
+
+.upload-requirements {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #f8f9fa;
     border-radius: 4px;
+}
+
+.upload-requirements ul {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
 }
