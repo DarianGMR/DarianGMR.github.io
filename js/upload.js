@@ -129,12 +129,17 @@ async function uploadSkin(skinName, skinFile) {
         console.log('Iniciando subida de skin:', skinName);
         const base64Data = await fileToBase64(skinFile);
         
+        // Obtener el token de manera segura
+        const token = await getGitHubToken();
+        
+        console.log('Preparando solicitud...');
+        
         const response = await fetch(
             'https://api.github.com/repos/DarianGMR/DarianGMR.github.io/dispatches',
             {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${await getGitHubToken()}`,
+                    'Authorization': `token ${token}`, // Cambiado de 'Bearer' a 'token'
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json',
                 },
@@ -154,6 +159,7 @@ async function uploadSkin(skinName, skinFile) {
             throw new Error(`Error al subir la skin: ${response.status} ${response.statusText}`);
         }
 
+        console.log('Solicitud enviada exitosamente');
         alert('Skin subida exitosamente. Los cambios aparecerán en unos momentos.');
         document.getElementById('uploadModal').style.display = 'none';
         resetForm();
@@ -178,7 +184,7 @@ function fileToBase64(file) {
 
 async function getGitHubToken() {
     // IMPORTANTE: Reemplaza esto con tu token personal de GitHub
-    return 'ghp_oXLVk3mXdoCgIhJ4PJRNXLvs1rBFeS4HKXEX';
+    return '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';
 }
 
 function resetForm() {
