@@ -13,16 +13,18 @@ function setupUploadModal() {
     errorDiv.className = 'error-message';
     skinFileInput.parentNode.appendChild(errorDiv);
 
+    // Cuando se hace clic en el botón de subir
     uploadBtn.addEventListener('click', () => {
         uploadModal.style.display = 'block';
     });
 
+    // Cerrar modal
     closeBtn.addEventListener('click', () => {
         uploadModal.style.display = 'none';
         resetForm();
     });
 
-    // Validar archivo cuando se seleccione
+    // Validar archivo al seleccionarlo
     skinFileInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         errorDiv.textContent = '';
@@ -55,6 +57,7 @@ function setupUploadModal() {
         showSkinPreview(file);
     });
 
+    // Manejar el envío del formulario
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const skinName = document.getElementById('skinName').value;
@@ -64,27 +67,45 @@ function setupUploadModal() {
             return;
         }
 
-        // Verificar si ya existe una skin con ese nombre
-        const exists = await checkSkinExists(skinName);
-        if (exists) {
-            showReplaceModal(skinName, skinFile);
-        } else {
-            await uploadSkin(skinName, skinFile);
+        try {
+            const base64Data = await fileToBase64(skinFile);
+            
+            const response = await fetch(
+                `https://api.github.com/repos/DarianGMR/DarianGMR.github.io/dispatches`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${await getGitHubToken()}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        event_type: 'upload-skin',
+                        client_payload: {
+                            skinName: skinName.toLowerCase().replace(/\s+/g, '-'),
+                            skinData: base64Data
+                        }
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Error al subir la skin');
+            }
+
+            alert('Skin subida exitosamente. Los cambios aparecerán en unos momentos.');
+            uploadModal.style.display = 'none';
+            resetForm();
+            setTimeout(loadSkins, 5000);
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al subir la skin. Por favor, intenta de nuevo.');
         }
-    });
-
-    document.getElementById('confirmReplace').addEventListener('click', async () => {
-        const skinName = document.getElementById('skinName').value;
-        const skinFile = document.getElementById('skinFile').files[0];
-        await uploadSkin(skinName, skinFile, true);
-        replaceModal.style.display = 'none';
-    });
-
-    document.getElementById('cancelReplace').addEventListener('click', () => {
-        replaceModal.style.display = 'none';
     });
 }
 
+// Funciones auxiliares
 function getImageDimensions(file) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -115,7 +136,6 @@ function showSkinPreview(file) {
     const preview = document.getElementById('skinPreview');
     preview.innerHTML = '';
 
-    // Crear visualizador 3D
     const skinViewer = new skinview3d.SkinViewer({
         canvas: document.createElement('canvas'),
         width: 200,
@@ -126,78 +146,24 @@ function showSkinPreview(file) {
     preview.appendChild(skinViewer.canvas);
 }
 
-async function checkSkinExists(skinName) {
-    try {
-        const response = await fetch('skins/metadata.json');
-        const data = await response.json();
-        return data.skins.some(skin => skin.name.toLowerCase() === skinName.toLowerCase());
-    } catch (error) {
-        console.error('Error checking skin:', error);
-        return false;
-    }
-}
-
-function showReplaceModal(skinName, skinFile) {
-    const replaceModal = document.getElementById('replaceModal');
-    replaceModal.style.display = 'block';
-}
-
-async function uploadSkin(skinName, skinFile, replace = false) {
-    try {
-        // En un entorno real, aquí enviarías los datos a un servidor
-        // Como estamos en GitHub Pages (estático), simularemos la actualización
-        
-        // 1. Leer el metadata.json actual
-        const response = await fetch('skins/metadata.json');
-        const data = await response.json();
-        
-        // 2. Generar nombre único para el archivo
-        const fileName = `${skinName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png`;
-        
-        // 3. Actualizar metadata
-        if (replace) {
-            // Eliminar la skin anterior si existe
-            const index = data.skins.findIndex(skin => skin.name.toLowerCase() === skinName.toLowerCase());
-            if (index !== -1) {
-                data.skins.splice(index, 1);
-            }
-        }
-        
-        // Agregar nueva skin
-        data.skins.push({
-            id: Date.now().toString(),
-            name: skinName,
-            file: fileName,
-            uploadDate: new Date().toISOString(),
-            uploader: "DarianGMR" // O el usuario actual
-        });
-
-        // En un entorno real, aquí guardarías el archivo y actualizarías metadata.json
-        // Como estamos en GitHub Pages, mostraremos un mensaje explicativo
-        alert(`
-            En un servidor real, la skin se habría guardado como: ${fileName}
-            
-            Para que esto funcione en GitHub Pages, necesitas:
-            1. Un backend separado para manejar las subidas
-            2. O usar GitHub Actions para automatizar las actualizaciones
-            
-            Por ahora, los cambios son solo demostrativos.
-        `);
-
-        // Cerrar modal y resetear formulario
-        document.getElementById('uploadModal').style.display = 'none';
-        resetForm();
-        
-        // Recargar la galería
-        await loadSkins();
-    } catch (error) {
-        console.error('Error uploading skin:', error);
-        alert('Error al subir la skin');
-    }
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            resolve(reader.result.split(',')[1]);
+        };
+        reader.onerror = reject;
+    });
 }
 
 function resetForm() {
     document.getElementById('uploadForm').reset();
     document.getElementById('skinPreview').innerHTML = '';
     document.querySelector('.error-message').textContent = '';
+}
+
+// Función para obtener el token (reemplaza esto con tu token)
+function getGitHubToken() {
+    return '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'; // Reemplaza con tu token real
 }
