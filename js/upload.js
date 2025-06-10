@@ -145,7 +145,6 @@ async function uploadSkin(skinName, skinFile) {
         console.log('Iniciando subida de skin:', skinName);
         const base64Data = await fileToBase64(skinFile);
         
-        // Token de GitHub
         const token = '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';
         
         console.log('Preparando solicitud...');
@@ -157,7 +156,7 @@ async function uploadSkin(skinName, skinFile) {
                 headers: {
                     'Authorization': `token ${token}`,
                     'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     event_type: 'upload-skin',
