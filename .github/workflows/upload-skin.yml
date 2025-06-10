@@ -1,0 +1,40 @@
+name: Upload Skin
+
+on:
+  repository_dispatch:
+    types: [upload-skin]
+
+jobs:
+  upload-skin:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.SKIN_UPLOAD_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Procesar y Subir Skin
+        env:
+          SKIN_DATA: ${{ github.event.client_payload.skinData }}
+          SKIN_NAME: ${{ github.event.client_payload.skinName }}
+          GITHUB_TOKEN: ${{ secrets.SKIN_UPLOAD_TOKEN }}
+        run: |
+          echo "$SKIN_DATA" | base64 -d > "skins/$SKIN_NAME.png"
+          node .github/scripts/update-metadata.js "$SKIN_NAME"
+
+      - name: Commit y Push
+        env:
+          GITHUB_TOKEN: ${{ secrets.SKIN_UPLOAD_TOKEN }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add skins/ metadata.json
+          git commit -m "Agregar skin: ${{ github.event.client_payload.skinName }}"
+          git push
