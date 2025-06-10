@@ -39,30 +39,29 @@ function setupUploadModal() {
         
         if (!file) return;
 
-        // Validar tipo de archivo
-        if (file.type !== 'image/png') {
-            errorDiv.textContent = 'Error: La skin debe ser un archivo PNG';
-            skinFileInput.value = '';
-            return;
-        }
+        try {
+            // Validar tipo de archivo
+            if (file.type !== 'image/png') {
+                throw new Error('La skin debe ser un archivo PNG');
+            }
 
-        // Validar tamaño (1MB máximo)
-        if (file.size > 1024 * 1024) {
-            errorDiv.textContent = 'Error: La skin no debe superar 1MB';
-            skinFileInput.value = '';
-            return;
-        }
+            // Validar tamaño (1MB máximo)
+            if (file.size > 1024 * 1024) {
+                throw new Error('La skin no debe superar 1MB');
+            }
 
-        // Validar dimensiones
-        const dimensions = await getImageDimensions(file);
-        if (dimensions.width !== 64 || dimensions.height !== 64) {
-            errorDiv.textContent = 'Error: La skin debe ser de 64x64 píxeles';
-            skinFileInput.value = '';
-            return;
-        }
+            // Validar dimensiones
+            const dimensions = await getImageDimensions(file);
+            if (dimensions.width !== 64 || dimensions.height !== 64) {
+                throw new Error('La skin debe ser de 64x64 píxeles');
+            }
 
-        // Mostrar vista previa
-        showSkinPreview(file);
+            // Mostrar vista previa
+            showSkinPreview(file);
+        } catch (error) {
+            errorDiv.textContent = `Error: ${error.message}`;
+            skinFileInput.value = '';
+        }
     });
 
     // Manejar el envío del formulario
@@ -70,6 +69,7 @@ function setupUploadModal() {
         e.preventDefault();
         const skinName = document.getElementById('skinName').value;
         const skinFile = document.getElementById('skinFile').files[0];
+        errorDiv.textContent = '';
 
         if (!skinFile || !isValidSkinFile(skinFile)) {
             return;
@@ -129,8 +129,8 @@ async function uploadSkin(skinName, skinFile) {
         console.log('Iniciando subida de skin:', skinName);
         const base64Data = await fileToBase64(skinFile);
         
-        // Obtener el token de manera segura
-        const token = await getGitHubToken();
+        // Token de GitHub directamente en el código
+        const token = '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';
         
         console.log('Preparando solicitud...');
         
@@ -139,7 +139,7 @@ async function uploadSkin(skinName, skinFile) {
             {
                 method: 'POST',
                 headers: {
-                    'Authorization': `token ${token}`, // Cambiado de 'Bearer' a 'token'
+                    'Authorization': `token ${token}`,
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json',
                 },
@@ -154,9 +154,8 @@ async function uploadSkin(skinName, skinFile) {
         );
 
         if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Error response:', errorData);
-            throw new Error(`Error al subir la skin: ${response.status} ${response.statusText}`);
+            const errorData = await response.json();
+            throw new Error(`Error al subir la skin: ${errorData.message || response.statusText}`);
         }
 
         console.log('Solicitud enviada exitosamente');
@@ -182,23 +181,12 @@ function fileToBase64(file) {
     });
 }
 
-async function getGitHubToken() {
-    // IMPORTANTE: Reemplaza esto con tu token personal de GitHub
-    return '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';
-}
-
-headers: {
-  'Authorization': 'Bearer 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',
-  'Accept': 'application/vnd.github.v3+json'
-}
-
 function resetForm() {
     document.getElementById('uploadForm').reset();
     document.getElementById('skinPreview').innerHTML = '';
     document.querySelector('.error-message').textContent = '';
 }
 
-// Función para cargar las skins existentes
 async function loadSkins() {
     try {
         const response = await fetch('skins/metadata.json');
