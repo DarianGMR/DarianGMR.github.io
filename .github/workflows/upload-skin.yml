@@ -20,21 +20,39 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Procesar y Subir Skin
+      - name: Debug Info
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event type: ${{ github.event.action }}"
+          echo "Skin name: ${{ github.event.client_payload.skinName }}"
+
+      - name: Process and Upload Skin
         env:
           SKIN_DATA: ${{ github.event.client_payload.skinData }}
           SKIN_NAME: ${{ github.event.client_payload.skinName }}
           GITHUB_TOKEN: ${{ secrets.SKIN_UPLOAD_TOKEN }}
         run: |
+          # Create skins directory if it doesn't exist
+          mkdir -p skins
+          
+          # Debug info
+          echo "Processing skin: $SKIN_NAME"
+          
+          # Decode and save skin
           echo "$SKIN_DATA" | base64 -d > "skins/$SKIN_NAME.png"
+          
+          # Update metadata
+          if [ ! -f skins/metadata.json ]; then
+            echo '{"skins":[]}' > skins/metadata.json
+          fi
+          
+          # Update using Node.js
           node .github/scripts/update-metadata.js "$SKIN_NAME"
 
-      - name: Commit y Push
-        env:
-          GITHUB_TOKEN: ${{ secrets.SKIN_UPLOAD_TOKEN }}
+      - name: Commit and Push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add skins/ metadata.json
-          git commit -m "Agregar skin: ${{ github.event.client_payload.skinName }}"
+          git add skins/
+          git commit -m "Add skin: ${{ github.event.client_payload.skinName }}"
           git push
